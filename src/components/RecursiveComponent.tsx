@@ -1,20 +1,26 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setOpenedFiles } from "../app/features/fileTreeSlice";
+import { AppDispatch, RootState } from "../app/store";
 import { IFile } from "../interface";
-import Icons from "../components/SVG/icons";
+import { doesFileExists } from "../utils/functions";
+import FileIcon from "./FileIcon";
 
 interface IProps {
   fileTree: IFile;
 }
 
 const RecursiveComponent = ({ fileTree }: IProps) => {
+  const { id, isFolder, name, children, content } = fileTree;
   const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const { openedFiles } = useSelector((state: RootState) => state.fileTreeSlice);
 
-  const getIcon = () => {
-    if (fileTree.isFolder === true) return "folder";
-    if (fileTree.name.endsWith(".js")) return "file-type-js";
-    if (fileTree.name.endsWith(".ts")) return "file-type-typescript";
-    if (fileTree.name.endsWith(".json")) return "file-type-json";
-    return "file-type-js"; // افتراضي
+  // __HANDLERS__
+  const onFileClicked = () => {
+    const exists = doesFileExists(openedFiles, id);
+    if (exists) return;
+    dispatch(setOpenedFiles([...openedFiles, fileTree]));
   };
 
   const toggleFolder = () => {
@@ -26,18 +32,14 @@ const RecursiveComponent = ({ fileTree }: IProps) => {
   return (
     <div className="ml-1">
       <div className="flex items-center cursor-pointer" onClick={toggleFolder}>
-        {fileTree.isFolder === true ? (
-          <Icons
-            name={isOpen ? "chevron-down" : "chevron-right"}
-            width={16}
-            height={16}
-            className="mr-1"
-          />
+        <FileIcon fileName={fileTree.name} isFolder={fileTree.isFolder} />
+        {fileTree.isFolder ? (
+          <span className="ml-5">{fileTree.name}</span>
         ) : (
-          <span className="ml-5"></span>
+          <span className="ml-5" onClick={onFileClicked}>
+            {fileTree.name}
+          </span>
         )}
-        <Icons name={getIcon()} width={16} height={16} className="mr-1" />
-        <span>{fileTree.name}</span>
       </div>
       {fileTree.isFolder === true && isOpen && fileTree.children && (
         <div className="ml-3">
