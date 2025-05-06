@@ -5,7 +5,7 @@ import { fileTree } from "./data/fileTree";
 function App() {
   return (
     <div className="flex">
-      <div className=" w-auto bg-[#252526] text-white border-2-gray-400 border-r h-[100vh]    ">
+      <div className=" w-auto bg-[#252526] text-white border-2-gray-400 border-r h-[100vh]">
         <RecursiveComponent fileTree={fileTree} />
       </div>
       <div className=" w-full">

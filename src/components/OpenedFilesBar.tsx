@@ -8,8 +8,8 @@ const OpenedFilesBar = ({}: IProps) => {
 
   return (
     <div className="flex gap-4 bg-[#252526] h-10 text-[#808080] items-center px-2">
-      {openedFiles.map((file, index) => (
-        <OpenedFilesTaps file={file} isActive={index === openedFiles.length - 1} />
+      {openedFiles.map((file) => (
+        <OpenedFilesTaps file={file} key={file.id} />
       ))}
     </div>
   );
