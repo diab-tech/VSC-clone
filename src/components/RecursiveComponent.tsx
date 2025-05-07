@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setOpenedFiles } from "../app/features/fileTreeSlice";
-import { AppDispatch, RootState } from "../app/store";
-import { IFile } from "../interface";
-import { doesFileExists } from "../utils/functions";
-import FileIcon from "./FileIcon";
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setActiveTab, setClickedFile, setOpenedFiles } from '../app/features/fileTreeSlice';
+import { AppDispatch, RootState } from '../app/store';
+import { IFile } from '../interface';
+import { doesFileExists } from '../utils/functions';
+import FileIcon from './FileIcon';
 
 interface IProps {
   fileTree: IFile;
@@ -19,6 +19,8 @@ const RecursiveComponent = ({ fileTree }: IProps) => {
   // __HANDLERS__
   const onFileClicked = () => {
     const exists = doesFileExists(openedFiles, id);
+    dispatch(setClickedFile({ fileContent: content, fileName: name }));
+    dispatch(setActiveTab(id));
     if (exists) return;
     dispatch(setOpenedFiles([...openedFiles, fileTree]));
   };

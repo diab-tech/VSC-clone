@@ -1,6 +1,6 @@
-import OpenedFilesBar from "./components/OpenedFilesBar";
-import RecursiveComponent from "./components/RecursiveComponent";
-import { fileTree } from "./data/fileTree";
+import OpenedFilesBar from './components/OpenedFilesBar';
+import RecursiveComponent from './components/RecursiveComponent';
+import { fileTree } from './data/fileTree';
 
 function App() {
   return (
@@ -8,7 +8,7 @@ function App() {
       <div className=" w-auto bg-[#252526] text-white border-2-gray-400 border-r h-[100vh]">
         <RecursiveComponent fileTree={fileTree} />
       </div>
-      <div className=" w-full">
+      <div className=" w-full ">
         <OpenedFilesBar />
       </div>
     </div>

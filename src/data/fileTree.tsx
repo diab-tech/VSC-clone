@@ -43,13 +43,21 @@ export const fileTree: IFile = {
         {
           id: uuidv4(),
 
-          name: "assets",
-          isFolder: true,
+            name: "assets",
+      isFolder: true,
           children: [
             {
               id: uuidv4(),
-
+              content: "this is a test content",
               name: "react.jsx",
+
+
+
+
+
+
+
+
               isFolder: false,
             },
           ],
