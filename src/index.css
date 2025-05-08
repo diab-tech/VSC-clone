@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+li {
+  list-style: none;
+}
+img {
+  color: red;
+}
