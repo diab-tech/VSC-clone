@@ -1,8 +1,16 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 li {
   list-style: none;
 }
 img {
   color: red;
+}
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(103, 102, 102) #252526;
+  }
+  .react-resizable-panels-handle {
+  }
 }

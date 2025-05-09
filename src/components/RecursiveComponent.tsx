@@ -5,12 +5,14 @@ import { AppDispatch, RootState } from '../app/store';
 import { IFile } from '../interface';
 import { doesFileExists } from '../utils/functions';
 import FileIcon from './FileIcon';
+import AppIcon from './AppIcons';
 
 interface IProps {
   fileTree: IFile;
+  isRoot?: boolean;
 }
 
-const RecursiveComponent = ({ fileTree }: IProps) => {
+const RecursiveComponent = ({ fileTree, isRoot = false }: IProps) => {
   const { id, name, content } = fileTree;
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
@@ -31,8 +33,25 @@ const RecursiveComponent = ({ fileTree }: IProps) => {
   };
 
   return (
-    <div className="ml-1">
-      <div className="flex items-center cursor-pointer" onClick={toggleFolder}>
+    <div className={`ml-1 mt-1 `}>
+      <div
+        className={`flex items-center cursor-pointer ${
+          isRoot
+            ? ' font-bold text-[13px] mr-[2px] hover:ring-1 hover:ring-blue-500  transition duration-200 uppercase '
+            : 'bg-transparent hover:bg-gray-500 transition duration-100'
+        }`}
+        onClick={toggleFolder}
+      >
+        {fileTree.isFolder ? (
+          isOpen ? (
+            <AppIcon iconName="chevronDown" />
+          ) : (
+            <AppIcon iconName="chevronRight" />
+          )
+        ) : (
+          ''
+        )}
+
         <FileIcon fileName={fileTree.name} isFolder={fileTree.isFolder} isOpened={isOpen} />
         {fileTree.isFolder ? (
           <span className="ml-5">{fileTree.name}</span>

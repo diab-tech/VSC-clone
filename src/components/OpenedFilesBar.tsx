@@ -1,20 +1,34 @@
 import { RootState } from '../app/store';
 import { useSelector } from 'react-redux';
 import OpenedFilesTaps from './OpenedFilesTab';
-import FileSyntaxHighlighter from './SyntaxHighlighter';
+import { useEffect, useRef } from 'react';
 
 const OpenedFilesBar = () => {
-  const { openedFiles, clickedFile } = useSelector((state: RootState) => state.fileTreeSlice);
+  const { openedFiles } = useSelector((state: RootState) => state.fileTreeSlice);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      scrollContainer.scrollLeft += e.deltaY;
+    };
+
+    scrollContainer.addEventListener('wheel', handleWheel);
+    return () => scrollContainer.removeEventListener('wheel', handleWheel);
+  }, []);
 
   return (
-    <div className=" flex flex-col w-full  bg-gray-200 ">
-      <div className=" flex bg-[#252526] h-10 overflow-x-auto whitespace-nowrap scrollbar-none text-sm cursor-pointer">
+    <div className=" w-full">
+      <div
+        ref={scrollRef}
+        className="flex bg-[#252526] h-10 overflow-x-auto whitespace-nowrap text-sm cursor-pointer [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         {openedFiles.map((file) => (
           <OpenedFilesTaps file={file} key={file.id} />
         ))}
-      </div>
-      <div className="max-h-[100vh] scroll-auto overflow-y-auto">
-        <FileSyntaxHighlighter content={clickedFile.fileContent} />
       </div>
     </div>
   );

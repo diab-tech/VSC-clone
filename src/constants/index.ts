@@ -93,4 +93,7 @@ export const extensionIconPath: { [key: string]: string } = {
 
 export const appIconsPath: { [key: string]: string } = {
   close: '../../vsc-icons/dark/close.svg',
+  chevronDown: '../../vsc-icons/dark/chevron-down.svg',
+  chevronRight: '../../vsc-icons/dark/chevron-right.svg',
+  vscode: '../../icons/vscode.svg',
 };

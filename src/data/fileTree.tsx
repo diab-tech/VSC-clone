@@ -111,7 +111,16 @@ const FileSyntaxHighlighter = ({ content }: IProps) => {
   );
 };
 
-export default FileSyntaxHighlighter;
+export default FileSyntaxHighlighter customStyle lorem kl; k;klk ;lklk;l ;kl;kl; lk;lk;kl  ;lkl; ;lk;lk; lk;lkl ;;klk;lk; ={{
+    minHeight: 'calc(100vh - 40px)',
+    padding: '0',
+    paddingBottom: '600px',
+    borderRadius: '0',
+    margin: '0',
+    overflowY: 'auto',
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none',
+  }};
 `,
               name: 'react.jsx',
               isFolder: false,
