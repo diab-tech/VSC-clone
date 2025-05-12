@@ -111,7 +111,7 @@ const FileSyntaxHighlighter = ({ content }: IProps) => {
   );
 };
 
-export default FileSyntaxHighlighter customStyle lorem kl; k;klk ;lklk;l ;kl;kl; lk;lk;kl  ;lkl; ;lk;lk; lk;lkl ;;klk;lk; ={{
+export default FileSyntaxHighlighter customStyle ={{
     minHeight: 'calc(100vh - 40px)',
     padding: '0',
     paddingBottom: '600px',

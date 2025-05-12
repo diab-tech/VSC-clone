@@ -1,7 +1,7 @@
-import { RootState } from '../app/store';
-import { useSelector } from 'react-redux';
-import OpenedFilesTaps from './OpenedFilesTab';
 import { useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../app/store';
+import OpenedFilesTaps from './OpenedFilesTab';
 
 const OpenedFilesBar = () => {
   const { openedFiles } = useSelector((state: RootState) => state.fileTreeSlice);

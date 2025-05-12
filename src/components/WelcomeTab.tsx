@@ -4,9 +4,9 @@ interface IProps {}
 
 const WelcomeTab = ({}: IProps) => {
   return (
-    <>
-      <AppIcon iconName="vscode" />
-    </>
+    <div className=" h-64 ">
+      <AppIcon iconName="vscode" className="w-64 h-64 " />
+    </div>
   );
 };
 

@@ -1,110 +1,172 @@
-import FileIcon from './FileIcon';
-import { IFile } from '../interface';
-import { useDispatch, useSelector } from 'react-redux';
-<<<<<<< HEAD
-import { setActiveTab, setClickedFile } from '../app/features/fileTreeSlice';
-import { RootState } from '../app/store';
-=======
-import { setClickedFile, setClosedFiles } from '../app/features/fileTreeSlice';
-import { RootState } from '../app/store';
-import AppIcon from './AppIcons';
->>>>>>> cceab709ebe8722bd31e978dc552656dcbb832e2
+import ReactDOM from "react-dom";
+import React, { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { IFile } from "../interface";
+import { RootState, store, AppDispatch } from "../app/store"; 
+import {
+  setClosedFiles,
+  setCloseToTheRight,
+} from "../app/features/fileTreeSlice";
+import { showMenu, hideMenu } from "../app/features/contextMenuSlice";
+import AppIcon from "./AppIcons";
+import FileIcon from "./FileIcon";
+import ContextMenu from "../Ui/ContextMenu";
 
 interface IProps {
   file: IFile;
 }
 
 const OpenedFilesTaps = ({ file }: IProps) => {
-  const dispatch = useDispatch();
-<<<<<<< HEAD
-  const { activeTab } = useSelector((state: RootState) => state.fileTreeSlice);
-
-  const fileHandler = () => {
-    dispatch(setClickedFile({ fileContent: file.content, fileName: file.name }));
-    dispatch(setActiveTab(file.id));
-  };
-  return (
-    <div
-      className={`flex items-center gap-1 ${
-        activeTab === file.id
-          ? 'border-t-2 border-amber-300 text-white'
-          : 'text-[#808080] border-t-2 border-transparent'
-=======
+  const dispatch = useDispatch<AppDispatch>();
   const {
     clickedFile,
     clickedFile: { activeTab },
     openedFiles,
   } = useSelector((state: RootState) => state.fileTreeSlice);
 
-  const fileHandler = () => {
-    dispatch(
-      setClickedFile({ fileContent: file.content, fileName: file.name, activeTab: file.id })
+  const { contextId, contextType, isVisible, position } = useSelector(
+    (state: RootState) => state.contextMenuSlice
+  );
+
+  // Log file information when clickedFile changes
+  useEffect(() => {
+    console.log('File content:', clickedFile.fileContent);
+    console.log('File name:', clickedFile.fileName);
+    console.log('Active tab:', clickedFile.activeTab);
+  }, [clickedFile]);
+
+  // We no longer need to update clickedFile after openedFiles changes
+  // The Redux reducer (setCloseToTheRight, setClosedFiles) now handles this logic
+  // This prevents duplicate dispatches of setClickedFile
+  
+  // For reference, this was the previous implementation:
+  /*
+  useEffect(() => {
+    const currentActiveTabExists = openedFiles.some(
+      (file) => file.id === clickedFile.activeTab
     );
-  };
 
-  const closeTabHandler = (e: React.MouseEvent) => {
-    e.stopPropagation(); // منع تنفيذ fileHandler
+    if (!currentActiveTabExists && openedFiles.length > 0) {
+      const lastActiveFile = openedFiles[openedFiles.length - 1];
+      dispatch({
+        type: 'fileTreeSlice/setClickedFile',
+        payload: {
+          activeTab: lastActiveFile.id,
+          fileName: lastActiveFile.name,
+          fileContent: lastActiveFile.content,
+        },
+      });
+    } else if (openedFiles.length === 0) {
+      dispatch({
+        type: 'fileTreeSlice/setClickedFile',
+        payload: {
+          activeTab: null,
+          fileName: '',
+          fileContent: undefined,
+        },
+      });
+    }
+  }, [openedFiles, dispatch, clickedFile.activeTab]);
+  */
 
-    const currentIndex = openedFiles.findIndex((f) => f.id === file.id);
 
-    dispatch(setClosedFiles([file.id]));
-
-    if (activeTab === file.id) {
-      const remainingTabs = openedFiles.filter((f) => f.id !== file.id);
-
-      const previousTab = currentIndex > 0 ? openedFiles[currentIndex - 1] : null;
-
-      const lastTab = remainingTabs.length > 0 ? remainingTabs[remainingTabs.length - 1] : null;
-
-      dispatch(
-        setClickedFile({
-          ...clickedFile,
-          activeTab: previousTab ? previousTab.id : lastTab ? lastTab.id : null,
-        })
+  // File click handler
+  const fileHandler = () => {
+    // Check if the file still exists in the current Redux state (not in component state)
+    // This prevents trying to activate tabs that have been closed
+    const currentOpenedFiles = store.getState().fileTreeSlice.openedFiles;
+    const currentState = store.getState().fileTreeSlice;
+    const fileExists = currentOpenedFiles.some((f: IFile) => f.id === file.id);
+    
+    if (fileExists) {
+      // Get current tabHistory
+      const currentTabHistory = [...currentState.clickedFile.tabHistory];
+      
+      // Add the new tab ID and filter to keep only the last occurrence of each ID
+      const updatedTabHistory = [...currentTabHistory, file.id].filter(
+        (id, index, self) => self.lastIndexOf(id) === index
       );
+      
+      dispatch({
+        type: 'fileTreeSlice/setClickedFile',
+        payload: {
+          fileContent: file.content,
+          fileName: file.name,
+          activeTab: file.id,
+          // Include the updated tabHistory in the payload
+          tabHistory: updatedTabHistory
+        },
+      });
+    } else {
+      console.log(`Tab ${file.id} no longer exists and cannot be activated`);
     }
   };
 
+  // Close tab handler
+  const closeTabHandler = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(setClosedFiles(file.id));
+  };
+
+  // Context menu handler
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dispatch(
+      showMenu({
+        position: { x: e.clientX, y: e.clientY },
+        contextType: "TAB",
+        contextId: file.id,
+      })
+    );
+  };
+
+  const handleCloseToTheRight = () => {
+    if (contextId) {
+      const index = openedFiles.findIndex((file: IFile) => file.id === contextId);
+      if (index !== -1) {
+        dispatch(setCloseToTheRight(contextId));
+      }
+    }
+    dispatch(hideMenu());
+  };
+
+  // const handleCloseToTheRight = () => {
+  //   if (contextId) {
+  //     dispatch(closeToTheRightAndSetActive(contextId));
+  //   }
+  // };
   return (
     <div
-      className={`flex items-center justify-center space-x-1 px-2 cursor-pointer group  last:border-r-gray-700 first:border-l-0 ${
+      className={`flex items-center justify-center space-x-1 px-2 cursor-pointer group last:border-r-gray-700 first:border-l-0 ${
         activeTab === file.id
-          ? 'border text-white group bg-[#1D1F21] border-l-gray-600 border-b-transparent border-r-gray-600 border-t-blue-800 first:border-l-0'
-          : 'text-[#808080] border border-t-transparent border-l border-b border-gray-600 first:border-l-0'
+          ? "border text-white group bg-[#1D1F21] border-l-gray-600 border-b-transparent border-r-gray-600 border-t-blue-800 first:border-l-0"
+          : "text-[#808080] border border-t-transparent border-l border-b border-gray-600 first:border-l-0"
       }`}
       onClick={fileHandler}
+      onContextMenu={handleContextMenu}
     >
       <div className="w-2"></div>
       <FileIcon fileName={file.name} isFolder={file.isFolder} />
       <span className="">{file.name}</span>
-<<<<<<< HEAD
-      {/* <span>
-        <svg
-          className=" hover:text-red-950 "
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M3.14642 9.00001L8.14641 14L8.85352 14L13.8535 9.00001L13.1464 8.2929L8.99997 12.4393L8.99997 2.00001L7.99997 2.00001L7.99997 12.4393L3.85353 8.2929L3.14642 9.00001Z"
-            fill="#C5C5C5"
-          />
-        </svg>
-      </span> */}
-=======
       <div
         onClick={closeTabHandler}
         className={`opacity-0 group-hover:opacity-100 min-w-5 transition-opacity duration-200 flex items-center ${
-          activeTab === file.id ? 'opacity-100' : 'opacity-0'
+          activeTab === file.id ? "opacity-100" : "opacity-0"
         }`}
       >
         <AppIcon iconName="close" />
       </div>
->>>>>>> cceab709ebe8722bd31e978dc552656dcbb832e2
+      {isVisible &&
+        position &&
+        ReactDOM.createPortal(
+          <ContextMenu
+            position={position}
+            contextType={contextType}
+            contextId={contextId}
+            onCloseToTheRight={handleCloseToTheRight}
+          />,
+          document.body
+        )}
     </div>
   );
 };

@@ -45,7 +45,9 @@ const ResizablePanels = ({}: IProps) => {
           <FilesPreview />
         </Panel>
       ) : (
-        <WelcomeTab />
+        <Panel className="flex items-center justify-center h-full overflow-hidden bg-[#1e1e1e]">
+          <WelcomeTab />
+        </Panel>
       )}
     </PanelGroup>
   );

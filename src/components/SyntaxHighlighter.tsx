@@ -2,7 +2,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 interface IProps {
-  content: string | undefined;
+  content: string | undefined | null;
 }
 
 const FileSyntaxHighlighter = ({ content }: IProps) => {
@@ -14,7 +14,7 @@ const FileSyntaxHighlighter = ({ content }: IProps) => {
         showLineNumbers
         wrapLongLines
         customStyle={{
-          padding: '20px 0 0 0',
+          padding: '20px 0 0 0px',
           margin: '0',
           borderRadius: '0',
           backgroundColor: '#1e1e1e',
@@ -30,7 +30,7 @@ const FileSyntaxHighlighter = ({ content }: IProps) => {
             fontSize: '16px',
             whiteSpace: 'pre-wrap',
             // wordBreak: 'break-word',
-            // padding: '20px 0 0 0',
+            padding: '0 0 200px 0px',
             display: 'block',
             paddingLeft: '2ch',
           },
