@@ -3,9 +3,10 @@ import { atomDark, vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/
 
 interface IProps {
   content: string | undefined | null;
+  onChange?: (value: string) => void;
 }
 
-const FileSyntaxHighlighter = ({ content }: IProps) => {
+const FileSyntaxHighlighter = ({ content, onChange }: IProps) => {
   return (
     <div>
       <SyntaxHighlighter
@@ -13,6 +14,11 @@ const FileSyntaxHighlighter = ({ content }: IProps) => {
         style={atomDark}
         showLineNumbers
         wrapLongLines
+        contentEditable={!!onChange}
+        onInput={onChange ? (e: React.FormEvent<HTMLElement>) => {
+          const value = (e.currentTarget).textContent || '';
+          onChange(value);
+        } : undefined}
         customStyle={{
           padding: '20px 0 0 0px',
           margin: '0',

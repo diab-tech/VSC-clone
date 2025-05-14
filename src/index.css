@@ -13,4 +13,101 @@ img {
   }
   .react-resizable-panels-handle {
   }
+/* الحاوية المشتركة للنقطة وأيقونة الإغلاق */
+.tab-status-container {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
 }
+
+/* النقطة */
+.unsaved-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+/* النقطة في التبويب النشط */
+.unsaved-dot-active {
+  background-color: white;
+}
+
+/* النقطة في التبويب غير النشط */
+.unsaved-dot-inactive {
+  background-color: gray;
+  opacity: 0.7;
+}
+
+/* أيقونة الإغلاق */
+.tab-close-btn {
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* حالة التبويب النشط ومحفوظ */
+.tab.active.saved .unsaved-dot {
+  opacity: 0;
+}
+.tab.active.saved .tab-close-btn {
+  opacity: 1; /* أيقونة الإغلاق مرئية دائمًا */
+}
+
+/* حالة التبويب النشط وغير محفوظ */
+.tab.active.unsaved .unsaved-dot {
+  opacity: 1;
+}
+.tab.active.unsaved .tab-close-btn {
+  opacity: 0;
+}
+.tab.active.unsaved:hover .unsaved-dot {
+  opacity: 0;
+}
+.tab.active.unsaved:hover .tab-close-btn {
+  opacity: 1;
+}
+
+/* حالة التبويب غير النشط ومحفوظ */
+.tab:not(.active).saved .unsaved-dot {
+  opacity: 0;
+}
+.tab:not(.active).saved .tab-close-btn {
+  opacity: 0;
+}
+.tab:not(.active).saved:hover .tab-close-btn {
+  opacity: 1;
+}
+
+/* حالة التبويب غير النشط وغير محفوظ */
+.tab:not(.active).unsaved .unsaved-dot {
+  opacity: 0.7;
+}
+.tab:not(.active).unsaved .tab-close-btn {
+  opacity: 0;
+}
+.tab:not(.active).unsaved:hover .unsaved-dot {
+  opacity: 0;
+}
+.tab:not(.active).unsaved:hover .tab-close-btn {
+  opacity: 0.7;
+}
+
+/* ضبط حجم أيقونة الإغلاق */
+.tab-close-btn svg {
+  width: 14px; /* قابل للتعديل حسب الحجم المطلوب */
+  height: 14px;
+}  }

@@ -1,7 +1,7 @@
 import { IFile } from '../interface';
 import { v4 as uuidv4 } from 'uuid';
 
-export const fileTree: IFile = {
+ const fileTree: IFile = {
   id: uuidv4(),
   name: 'VSC-clone',
   isFolder: true,

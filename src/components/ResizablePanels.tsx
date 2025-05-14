@@ -1,6 +1,6 @@
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import RecursiveComponent from './RecursiveComponent';
-import { fileTree } from '../data/fileTree';
+// import { fileTree } from '../data/fileTree';
 import OpenedFilesBar from './OpenedFilesBar';
 import { useState } from 'react';
 import FilesPreview from './FilesPreview';
@@ -11,7 +11,8 @@ import WelcomeTab from './WelcomeTab';
 interface IProps {}
 
 const ResizablePanels = ({}: IProps) => {
-  const { openedFiles } = useSelector((state: RootState) => state.fileTreeSlice);
+  const { openedFiles } = useSelector((state: RootState) => state.fileBarSlice);
+  const { tree } = useSelector((state: RootState) => state.fileTreeSlice);
 
   const [panelSize, setPanelSize] = useState<number>(20); // الحجم الافتراضي 20%
 
@@ -26,7 +27,7 @@ const ResizablePanels = ({}: IProps) => {
         }`}
       >
         <div className="h-full overflow-y-auto whitespace-nowrap text-sm cursor-pointer [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-          <RecursiveComponent fileTree={fileTree} isRoot />
+          <RecursiveComponent fileTree={tree} isRoot />
           <div className="h-10"></div>
         </div>
       </Panel>
