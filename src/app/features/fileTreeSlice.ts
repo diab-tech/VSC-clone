@@ -24,6 +24,18 @@ const defaultTree: IFile = {
           name: 'example2.txt',
           isFolder: false,
           content: ''
+        },
+        {
+          id: 'example-file3',
+          name: 'example3.txt',
+          isFolder: false,
+          content: 'aaaa'
+        } ,
+        {
+          id: 'example-file4',
+          name: 'example4.txt',
+          isFolder: false,
+          content: 'aa'
         }
       ]
     }
@@ -44,7 +56,7 @@ const ensureFileContent = (node: IFile): IFile => {
       children: node.children.map(ensureFileContent)
     };
   }
-  
+   
   return node;
 };
 import { addNode, deleteNode, renameNode } from '../../utils/fileTreeHelpers';
@@ -57,7 +69,7 @@ interface FileTreeState {
     tree: ensureFileContent(defaultTree),
     selectedId: null,
   };
-  
+  console.log("Initial tree:", initialState.tree);  
   
 // Slice definition
 export const fileTreeSlice = createSlice({
@@ -76,10 +88,10 @@ export const fileTreeSlice = createSlice({
         name: action.payload.newItem.name,
         isFolder: action.payload.newItem.isFolder,
         children: action.payload.newItem.isFolder ? [] : undefined,
-        content: action.payload.newItem.isFolder ? undefined : '', // ✅ ملف فقط
-
       };
-      state.tree = addNode(state.tree, action.payload.parentId, newItem);
+      const ensuredItem = ensureFileContent(newItem);
+      state.tree = addNode(state.tree, action.payload.parentId, ensuredItem)
+      console.log("Updated tree:", state.tree);
     },
     setEditFileContent: (
         state,
@@ -117,10 +129,12 @@ export const fileTreeSlice = createSlice({
     ,
     setSelectedItem: (state, action: PayloadAction<string>) => {
         state.selectedId = action.payload;
-      }
-      
+      },
+      clearSelectedId: (state) => {
+        state.selectedId = null; 
+      },
   },
 });
-
-export const { setAddItem, setEditFileContent, setDeleteItem, setRenameItem, setSelectedItem } = fileTreeSlice.actions;
+          
+export const { setAddItem, setEditFileContent,  setDeleteItem, setRenameItem, setSelectedItem, clearSelectedId }  = fileTreeSlice.actions;
 export default fileTreeSlice.reducer;

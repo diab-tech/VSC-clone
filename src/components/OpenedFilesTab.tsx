@@ -20,7 +20,6 @@ interface IProps {
 const OpenedFilesTaps = ({ file, isModified }: IProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const {
-    clickedFile,
     clickedFile: { activeTab },
     openedFiles,
   } = useSelector((state: RootState) => state.fileBarSlice);
@@ -29,12 +28,6 @@ const OpenedFilesTaps = ({ file, isModified }: IProps) => {
     (state: RootState) => state.contextMenuSlice
   );
 
-  // Log file information when clickedFile changes
-  useEffect(() => {
-    console.log("File content:", clickedFile.fileContent);
-    console.log("File name:", clickedFile.fileName);
-    console.log("Active tab:", clickedFile.activeTab);
-  }, [clickedFile]);
 
   // We no longer need to update clickedFile after openedFiles changes
   // The Redux reducer (setCloseToTheRight, setClosedFiles) now handles this logic
@@ -103,8 +96,8 @@ const OpenedFilesTaps = ({ file, isModified }: IProps) => {
   };
 
   // Close tab handler
-  const closeTabHandler = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const closeTabHandler = () => {
+    // e.stopPropagation();
     dispatch(setClosedFiles(file.id));
   };
 
@@ -120,21 +113,21 @@ const OpenedFilesTaps = ({ file, isModified }: IProps) => {
     );
   };
 
-  const handleCloseToTheRight = () => {
-    if (contextId) {
-      const index = openedFiles.findIndex(
-        (file: IFile) => file.id === contextId
-      );
-      if (index !== -1) {
-        dispatch(setCloseToTheRight(contextId));
-      }
-    }
-    dispatch(hideMenu());
-  };
+  // const handleCloseToTheRight = () => {
+  //   if (contextId) {
+  //     const index = openedFiles.findIndex(
+  //       (file: IFile) => file.id === contextId
+  //     );
+  //     if (index !== -1) {
+  //       dispatch(setCloseToTheRight(contextId));
+  //     }
+  //   }
+  //   dispatch(hideMenu());
+  // };
 
   return (
 <div
-  className={`tab flex items-center justify-center space-x-1 px-2 cursor-pointer group last:border-r-gray-700 first:border-l-0 ${
+  className={`tab flex items-center justify-center space-x-1 px-2 cursor-pointer      last:border-r-gray-700 first:border-l-0 ${
     activeTab === file.id
       ? "active border text-white bg-[#1D1F21] border-l-gray-600 border-b-transparent border-r-gray-600 border-t-blue-800 first:border-l-0"
       : "text-[#808080] border border-t-transparent border-l border-b border-gray-600 first:border-l-0"
@@ -167,7 +160,7 @@ const OpenedFilesTaps = ({ file, isModified }: IProps) => {
         position={position}
         contextType={contextType}
         contextId={contextId}
-        onCloseToTheRight={handleCloseToTheRight}
+        // onCloseToTheRight={handleCloseToTheRight}
       />,
       document.body
     )}

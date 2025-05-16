@@ -96,4 +96,5 @@ export const appIconsPath: { [key: string]: string } = {
   chevronDown: '../../vsc-icons/dark/chevron-down.svg',
   chevronRight: '../../vsc-icons/dark/chevron-right.svg',
   vscode: '../../icons/vscode.svg',
+  ellipsis: '../../vsc-icons/dark/ellipsis.svg',
 };

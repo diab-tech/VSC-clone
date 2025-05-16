@@ -1,27 +1,49 @@
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { setClickedFile, setOpenedFiles } from '../app/features/filesBarSlice';
-import { AppDispatch, RootState } from '../app/store';
-import { IFile } from '../interface';
-import { doesFileExists } from '../utils/functions';
-import FileIcon from './FileIcon';
-import AppIcon from './AppIcons';
-import { setSelectedItem } from '../app/features/fileTreeSlice';
-
+import { useEffect, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setClickedFile, setOpenedFiles } from "../app/features/filesBarSlice";
+import { AppDispatch } from "../app/store";
+import { IFile } from "../interface";
+import { doesFileExists } from "../utils/functions";
+import FileIcon from "./FileIcon";
+import AppIcon from "./AppIcons";
+import {
+  setSelectedItem,
+  clearSelectedId,
+} from "../app/features/fileTreeSlice";
+import clsx from "clsx";
+import {
+  selectFileBarData,
+  selectSelectedId,
+} from "../app/features/reselector";
 interface IProps {
   fileTree: IFile;
   isRoot?: boolean;
-  selectedItem?: string | null;
+  selectedTab?: string | null;
 }
 
-const RecursiveComponent = ({ fileTree, isRoot = false, selectedItem }: IProps) => {
-  const { id, name, content } = fileTree;
-  const [isOpen, setIsOpen] = useState(false);
+const RecursiveComponent = ({
+  fileTree,
+  isRoot = false,
+  selectedTab,
+}: IProps) => {
+  const { id, name, content, isFolder, children } = fileTree;
+  const [isOpen, setIsOpen] = useState(true);
+  const [manuallyClosed, setManuallyClosed] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { openedFiles, clickedFile } = useSelector((state: RootState) => state.fileBarSlice);
-  // const { selectedId } = useSelector(
-  //   (state: RootState) => state.fileTreeSlice
-  // );
+
+  const { openedFiles, clickedFile } = useSelector(selectFileBarData);
+  const selectedId = useSelector(selectSelectedId);
+
+  const isFileInFolder = useCallback(
+    (folder: IFile, fileId: string | null): boolean => {
+      if (!folder.isFolder || !folder.children) return false;
+      return folder.children.some((child) => {
+        if (child.id === fileId) return true;
+        return isFileInFolder(child, fileId);
+      });
+    },
+    []
+  );
 
   // __HANDLERS__
   const onFileClicked = () => {
@@ -37,25 +59,87 @@ const RecursiveComponent = ({ fileTree, isRoot = false, selectedItem }: IProps) 
         ),
       })
     );
+    dispatch(setSelectedItem(id));
+    
     if (exists) return;
     dispatch(setOpenedFiles([...openedFiles, fileTree]));
   };
 
-  const toggleFolder = () => {
-    if (fileTree.isFolder === true) {
-      setIsOpen(!isOpen);
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    dispatch(setSelectedItem(id));
+    
+    if (fileTree.isFolder) {
+      const newIsOpen = !isOpen;
+      setIsOpen(newIsOpen);
+      setManuallyClosed(!newIsOpen);
+    } else {
+      onFileClicked();
     }
   };
+  // فتح المجلد الأب لو الملف اللي اتفتح موجود جواه
+  useEffect(() => {
+    if (
+      isFolder &&
+      selectedTab &&
+      selectedTab !== id &&
+      isOpen === false &&
+      !manuallyClosed
+    ) {
+      if (isFileInFolder(fileTree, selectedTab)) {
+        setIsOpen(true);
+      }
+    }
+  }, [
+    selectedTab,
+    isFolder,
+    id,
+    isOpen,
+    children,
+    manuallyClosed,
+    fileTree,
+    isFileInFolder,
+  ]);
+  useEffect(() => {
+    setManuallyClosed(false);
+
+  }, [selectedTab]);
+  // remove selectedId when click outside
+  useEffect(() => {
+    const delSelectedId = () => dispatch(clearSelectedId());
+    window.addEventListener("click", delSelectedId);
+    return () => {
+      window.removeEventListener("click", delSelectedId);
+    };
+  }, [dispatch]);
 
   return (
-    <div className={`${selectedItem === id ? 'bg-gray-500 w-full' : ''}`}>
+    <div
+      className={clsx( 
+        selectedTab === id && selectedTab !== selectedId 
+        ? "bg-gray-600"
+        : ""
+      )}
+    >
       <div
-        className={`flex items-center cursor-pointer  ${
-          isRoot
-            ? 'ml-0.5 mt-0.5 font-bold text-[13px] mr-1 not-visited:hover:ring-1 hover:ring-blue-500 transition duration-200 uppercase '
-            : 'bg-transparent hover:bg-gray-700 transition duration-100'
-        } `}
-        onClick={toggleFolder}
+        className={clsx(
+          selectedId === id
+        ? fileTree.isFolder 
+          ? "border-1 border-blue-500 bg-[oklch(65.19%_0.204_253.14_/_0.3)]" // Apply blue background for selected folders
+          : selectedTab === selectedId
+            ? "border-1 border-blue-500 bg-[oklch(65.19%_0.204_253.14_/_0.3)]" // Apply blue background for selected files
+            : selectedTab === id
+              ? "" 
+              : "border-1 border-transparent border-r-0 bg-gray-600" 
+        : "border-1 border-transparent border-r-0",
+          "flex items-center cursor-pointer ",
+          {
+            "ml-0.5 mt-0.5 font-bold text-[13px] uppercase ": isRoot,
+            "hover:bg-gray-700 transition duration-100":
+              selectedTab !== id && selectedId !== id && !isRoot ,
+          }
+        )}
+        onClick={handleClick}
       >
         {fileTree.isFolder ? (
           isOpen ? (
@@ -64,25 +148,29 @@ const RecursiveComponent = ({ fileTree, isRoot = false, selectedItem }: IProps) 
             <AppIcon iconName="chevronRight" />
           )
         ) : (
-          <>
-            {/* <div className="h-full w-[10px] border-l-[1px] border-l-gray-600"></div> */}
-            <span className="pl-[10px] "></span>
-          </>
+          <span className="pl-[10px] "></span>
         )}
 
-        <FileIcon fileName={fileTree.name} isFolder={fileTree.isFolder} isOpened={isOpen} />
-        {fileTree.isFolder ? (
-          <span className="pl-2">{fileTree.name}</span>
-        ) : (
-          <span className={`pl-2 `} onClick={onFileClicked}>
-            {fileTree.name}
-          </span>
+        {!isRoot && (
+          <>
+            <FileIcon
+              fileName={fileTree.name}
+              isFolder={fileTree.isFolder}
+              isOpened={isOpen}
+            />
+          </>
         )}
+        <span className={`pl-1.5 block`}>{fileTree.name}</span>
       </div>
       {fileTree.isFolder === true && isOpen && fileTree.children && (
         <div className="ml-2 border-l border-gray-600 ">
-          {fileTree.children.map((file, index) => (
-            <RecursiveComponent fileTree={file} key={index} selectedItem={clickedFile.activeTab} />
+          {fileTree.children.map((file) => (
+            console.log("Rendering file:", file.name),
+            <RecursiveComponent
+              fileTree={file}
+              key={file.id}
+              selectedTab={clickedFile.activeTab}
+            />
           ))}
         </div>
       )}

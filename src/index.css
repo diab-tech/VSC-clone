@@ -11,10 +11,10 @@ img {
     scrollbar-width: thin;
     scrollbar-color: rgb(103, 102, 102) #252526;
   }
-  .react-resizable-panels-handle {
-  }
-/* الحاوية المشتركة للنقطة وأيقونة الإغلاق */
-.tab-status-container {
+.ellipsis {
+  cursor: pointer;
+}
+  .tab-status-container {
   position: relative;
   width: 16px;
   height: 16px;

@@ -26,7 +26,7 @@ const ContextMenu = ({ position, contextType, contextId, onCloseToTheRight }: IP
     const handleClick = () => dispatch(hideMenu());
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
-  }, []);
+  }, [dispatch]);
 
   const handleCloseTab = () => {
     if (contextId) {
@@ -39,12 +39,12 @@ const ContextMenu = ({ position, contextType, contextId, onCloseToTheRight }: IP
     dispatch(setClosedAllFiles());
     dispatch(hideMenu());
   };
-
+  // if (onCloseToTheRight) {
+  //   // Use the callback passed from parent component if available
+  //   onCloseToTheRight();
+  // } else 
   const handleCloseToTheRight = () => {
-    if (onCloseToTheRight) {
-      // Use the callback passed from parent component if available
-      onCloseToTheRight();
-    } else if (contextId) {
+if (contextId) {
       // Fall back to default implementation
       const index = openedFiles.findIndex((file) => file.id === contextId);
       if (index !== -1) {
