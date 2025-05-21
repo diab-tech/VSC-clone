@@ -33,9 +33,15 @@ const defaultTree: IFile = {
         } ,
         {
           id: 'example-file4',
-          name: 'example4.txt',
+          name: 'example4.ts',
           isFolder: false,
-          content: 'aa'
+          content: `
+function outer() {
+  const innerVar = 42;
+  function inner() {
+    console.log("Inner");
+  }
+}`
         }
       ]
     }

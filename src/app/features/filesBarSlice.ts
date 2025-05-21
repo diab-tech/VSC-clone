@@ -164,6 +164,7 @@ export const fileBarSlice = createSlice({
           ),
         };
       }
+      console.log("Redux: Updating clickedFile", action.payload);
     },
   },
 });

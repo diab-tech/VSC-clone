@@ -5,11 +5,12 @@ import { actionInterceptor } from './middleware/actionInterceptor';
 import { ThunkAction } from 'redux-thunk';
 import { AnyAction } from 'redux';
 import { fileTreeSlice } from './features/fileTreeSlice';
-
 // Import redux-persist
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web
 import { combineReducers } from '@reduxjs/toolkit';
+import { editorSlice } from './features/editorSlice';
+
 
 // Define RootState type before using it in store configuration
 // This matches the shape of our reducer object
@@ -17,6 +18,7 @@ export interface RootState {
   fileBarSlice: ReturnType<typeof fileBarSlice.reducer>;
   contextMenuSlice: ReturnType<typeof contextMenuSlice.reducer>;
   fileTreeSlice: ReturnType<typeof fileTreeSlice.reducer>;
+  editor: ReturnType<typeof editorSlice.reducer>;
 }
 
 // Configure persistence
@@ -31,7 +33,8 @@ const persistConfig = {
 const rootReducer = combineReducers({
   fileBarSlice: fileBarSlice.reducer,
   contextMenuSlice: contextMenuSlice.reducer,
-  fileTreeSlice: fileTreeSlice.reducer
+  fileTreeSlice: fileTreeSlice.reducer,
+  editor: editorSlice.reducer,
 });
 
 // Create the persisted reducer
