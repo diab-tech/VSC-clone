@@ -1,16 +1,17 @@
-import { configureStore, Middleware } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { fileBarSlice } from './features/filesBarSlice';
 import { contextMenuSlice } from './features/contextMenuSlice';
+import { fileTreeSlice } from './features/fileTreeSlice';
+import { editorSlice } from './features/editorSlice';
+import { outlineSlice } from './features/outlineSlice';
+import outlineVisibilitySlice from './features/outlineVisibilitySlice';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import { combineReducers } from '@reduxjs/toolkit';
+import { configureStore, Middleware } from '@reduxjs/toolkit';
 import { actionInterceptor } from './middleware/actionInterceptor';
 import { ThunkAction } from 'redux-thunk';
 import { AnyAction } from 'redux';
-import { fileTreeSlice } from './features/fileTreeSlice';
-// Import redux-persist
-import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web
-import { combineReducers } from '@reduxjs/toolkit';
-import { editorSlice } from './features/editorSlice';
-
 
 // Define RootState type before using it in store configuration
 // This matches the shape of our reducer object
@@ -19,6 +20,8 @@ export interface RootState {
   contextMenuSlice: ReturnType<typeof contextMenuSlice.reducer>;
   fileTreeSlice: ReturnType<typeof fileTreeSlice.reducer>;
   editor: ReturnType<typeof editorSlice.reducer>;
+  outline: ReturnType<typeof outlineSlice.reducer>;
+  outlineVisibility: ReturnType<typeof outlineVisibilitySlice.reducer>;
 }
 
 // Configure persistence
@@ -35,6 +38,8 @@ const rootReducer = combineReducers({
   contextMenuSlice: contextMenuSlice.reducer,
   fileTreeSlice: fileTreeSlice.reducer,
   editor: editorSlice.reducer,
+  outline: outlineSlice.reducer,
+  outlineVisibility: outlineVisibilitySlice,
 });
 
 // Create the persisted reducer
@@ -47,7 +52,8 @@ export const store = configureStore({
     getDefaultMiddleware({
       // This is needed because redux-persist uses non-serializable values
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
+        // ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
+        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE', 'fileTree/setReplaceTree']
       }
     }).concat(actionInterceptor as Middleware<unknown, RootState>),
 });

@@ -1,53 +1,10 @@
-// fileTreeSlice.ts
+// Add setReplaceTree action t// fileTreeSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import { IFile } from '../../interface';
-// Default initial tree structure
-const defaultTree: IFile = {
-  id: 'root',
-  name: 'root',
-  isFolder: true,
-  children: [
-    {
-      id: 'example-folder',
-      name: 'example',
-      isFolder: true,
-      children: [
-        {
-          id: 'example-file',
-          name: 'example.txt',
-          isFolder: false,
-          content: ''
-        },
-        {
-          id: 'example-file2',
-          name: 'example2.txt',
-          isFolder: false,
-          content: ''
-        },
-        {
-          id: 'example-file3',
-          name: 'example3.txt',
-          isFolder: false,
-          content: 'aaaa'
-        } ,
-        {
-          id: 'example-file4',
-          name: 'example4.ts',
-          isFolder: false,
-          content: `
-function outer() {
-  const innerVar = 42;
-  function inner() {
-    console.log("Inner");
-  }
-}`
-        }
-      ]
-    }
-  ]
-};
 
+// Use the enhanced default tree structure
+const defaultTree: IFile = createDefaultTree();
 // Helper to ensure all files have content
 const ensureFileContent = (node: IFile): IFile => {
   // If this is a file with no content, add empty content
@@ -65,7 +22,8 @@ const ensureFileContent = (node: IFile): IFile => {
    
   return node;
 };
-import { addNode, deleteNode, renameNode } from '../../utils/fileTreeHelpers';
+import { addNode, deleteNode, renameNode, moveNode } from '../../utils/fileTreeHelpers';
+import { createDefaultTree } from '../../utils/defaultTreeData';
 
 interface FileTreeState {
     tree: IFile;
@@ -131,8 +89,22 @@ export const fileTreeSlice = createSlice({
       action: PayloadAction<{ itemId: string; newName: string }>
     ) => {
       state.tree = renameNode(state.tree, action.payload.itemId, action.payload.newName);
-    }
-    ,
+    },
+    setMoveItem: (
+      state,
+      action: PayloadAction<{ sourceId: string; targetId: string }>
+    ) => {
+      state.tree = moveNode(state.tree, action.payload.sourceId, action.payload.targetId);
+    },
+    setReplaceTree: (
+      state,
+      action: PayloadAction<IFile>
+    ) => {
+      // Process the new tree to ensure all files have content
+      const processedTree = ensureFileContent(action.payload);
+      // Replace the entire tree with the new one
+      state.tree = processedTree;
+    },
     setSelectedItem: (state, action: PayloadAction<string>) => {
         state.selectedId = action.payload;
       },
@@ -142,5 +114,14 @@ export const fileTreeSlice = createSlice({
   },
 });
           
-export const { setAddItem, setEditFileContent,  setDeleteItem, setRenameItem, setSelectedItem, clearSelectedId }  = fileTreeSlice.actions;
+export const { 
+  setAddItem, 
+  setEditFileContent, 
+  setDeleteItem, 
+  setRenameItem, 
+  setSelectedItem, 
+  clearSelectedId, 
+  setMoveItem,
+  setReplaceTree 
+}  = fileTreeSlice.actions;
 export default fileTreeSlice.reducer;

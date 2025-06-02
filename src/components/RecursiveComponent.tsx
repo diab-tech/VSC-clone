@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setClickedFile, setOpenedFiles } from "../app/features/filesBarSlice";
-import { AppDispatch } from "../app/store";
+import { AppDispatch, RootState } from "../app/store";
 import { IFile } from "../interface";
 import { doesFileExists } from "../utils/functions";
 import FileIcon from "./FileIcon";
@@ -9,13 +9,17 @@ import AppIcon from "./AppIcons";
 import {
   setSelectedItem,
   clearSelectedId,
+  setMoveItem
 } from "../app/features/fileTreeSlice";
 import clsx from "clsx";
 import {
   selectFileBarData,
   selectSelectedId,
 } from "../app/features/reselector";
-import OutlinePanel from "./OutlinePanel";
+import OutlineDropdown from "./OutlineDropdown";
+import ContextMenu from "./ContextMenu";
+import FileOperationsModal from "./FileOperationsModal";
+import DragDropHandler from "./DragDropHandler";
 interface IProps {
   fileTree: IFile;
   isRoot?: boolean;
@@ -38,6 +42,15 @@ const RecursiveComponent = ({
   const { id, name, content, isFolder, children } = fileTree;
   const [isOpen, setIsOpen] = useState(true);
   const [manuallyClosed, setManuallyClosed] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{x: number, y: number} | null>(null);
+  const [fileOperation, setFileOperation] = useState<{
+    type: 'new-file' | 'new-folder' | 'rename' | 'delete';
+    parentId: string;
+    itemId?: string;
+    itemName?: string;
+    isFolder?: boolean;
+  } | null>(null);
+  
   const dispatch = useDispatch<AppDispatch>();
 
   const { openedFiles, clickedFile } = useSelector(selectFileBarData);
@@ -92,6 +105,59 @@ const RecursiveComponent = ({
       onFileClicked();
     }
   };
+  
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(setSelectedItem(id));
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+  
+  const closeContextMenu = () => {
+    setContextMenu(null);
+  };
+  
+  const handleNewFile = () => {
+    setFileOperation({
+      type: 'new-file',
+      parentId: id,
+    });
+    closeContextMenu();
+  };
+  
+  const handleNewFolder = () => {
+    setFileOperation({
+      type: 'new-folder',
+      parentId: id,
+    });
+    closeContextMenu();
+  };
+  
+  const handleDelete = () => {
+    setFileOperation({
+      type: 'delete',
+      parentId: isFolder ? '' : id,
+      itemId: id,
+      itemName: name,
+      isFolder: isFolder
+    });
+    closeContextMenu();
+  };
+  
+  const handleRename = () => {
+    setFileOperation({
+      type: 'rename',
+      parentId: '',
+      itemId: id,
+      itemName: name,
+      isFolder: isFolder
+    });
+    closeContextMenu();
+  };
+  
+  const closeFileOperation = () => {
+    setFileOperation(null);
+  };
   // فتح المجلد الأب لو الملف اللي اتفتح موجود جواه
   useEffect(() => {
     if (
@@ -128,73 +194,122 @@ const RecursiveComponent = ({
     };
   }, [dispatch]);
 
+  // Handle file/folder move via drag and drop
+  const handleMoveFile = (sourceId: string, targetId: string) => {
+    // Don't allow moving a folder into itself or its descendants
+    if (isFolder && (sourceId === id || isDescendant(fileTree, sourceId, id))) {
+      return;
+    }
+    
+    dispatch(setMoveItem({
+      sourceId,
+      targetId
+    }));
+  };
+
   return (
-    <div
-      className={clsx( 
-        selectedTab === id && selectedTab !== selectedId 
-        ? "bg-gray-600"
-        : ""
-      )}
+    <DragDropHandler
+      fileId={id}
+      isFolder={isFolder}
+      onMoveFile={handleMoveFile}
     >
       <div
-        className={clsx(
-          selectedId === id
-        ? fileTree.isFolder 
-          ? "border-1 border-blue-500 bg-[oklch(65.19%_0.204_253.14_/_0.3)]" // Apply blue background for selected folders
-          : selectedTab === selectedId
-            ? "border-1 border-blue-500 bg-[oklch(65.19%_0.204_253.14_/_0.3)]" // Apply blue background for selected files
-            : selectedTab === id
-              ? "" 
-              : "border-1 border-transparent border-r-0 bg-gray-600" 
-        : "border-1 border-transparent border-r-0",
-          "flex items-center cursor-pointer ",
-          {
-            "ml-0.5 mt-0.5 font-bold text-[13px] uppercase ": isRoot,
-            "hover:bg-gray-700 transition duration-100":
-              selectedTab !== id && selectedId !== id && !isRoot ,
-          }
+        className={clsx( 
+          selectedTab === id && selectedTab !== selectedId 
+          ? "bg-gray-600"
+          : ""
         )}
-        onClick={handleClick}
       >
-        {fileTree.isFolder ? (
-          isOpen ? (
-            <AppIcon iconName="chevronDown" />
+        <div
+          className={clsx(
+            selectedId === id
+          ? fileTree.isFolder 
+            ? "border-1 border-blue-500 bg-[oklch(65.19%_0.204_253.14_/_0.3)]" // Apply blue background for selected folders
+            : selectedTab === selectedId
+              ? "border-1 border-blue-500 bg-[oklch(65.19%_0.204_253.14_/_0.3)]" // Apply blue background for selected files
+              : selectedTab === id
+                ? "" 
+                : "border-1 border-transparent border-r-0 bg-gray-600" 
+          : "border-1 border-transparent border-r-0",
+            "flex items-center cursor-pointer ",
+            {
+              "ml-0.5 mt-0.5 font-bold text-[13px] uppercase ": isRoot,
+              "hover:bg-gray-700 transition duration-100":
+                selectedTab !== id && selectedId !== id && !isRoot ,
+            }
+          )}
+          onClick={handleClick}
+          onContextMenu={handleContextMenu}
+        >
+          {fileTree.isFolder ? (
+            isOpen ? (
+              <AppIcon iconName="chevronDown" />
+            ) : (
+              <AppIcon iconName="chevronRight" />
+            )
           ) : (
-            <AppIcon iconName="chevronRight" />
-          )
-        ) : (
-          <span className="pl-[10px] "></span>
-        )}
+            <span className="pl-[10px] "></span>
+          )}
 
-        {!isRoot && (
+          {!isRoot && (
+            <>
+              <FileIcon
+                fileName={fileTree.name}
+                isFolder={fileTree.isFolder}
+                isOpened={isOpen}
+              />
+            </>
+          )}
+          <span className={`pl-1.5 block`}>{fileTree.name}</span>
+        </div>
+        {fileTree.isFolder === true && isOpen && fileTree.children && (
           <>
-            <FileIcon
-              fileName={fileTree.name}
-              isFolder={fileTree.isFolder}
-              isOpened={isOpen}
-            />
+          <div className="ml-2 border-l border-gray-600 ">
+            {fileTree.children.map((file) => (
+              <RecursiveComponent
+                fileTree={file}
+                key={file.id}
+                selectedTab={clickedFile.activeTab}
+              />
+            ))}
+          </div>
           </>
         )}
-        <span className={`pl-1.5 block`}>{fileTree.name}</span>
+        
+        {/* Add OutlineDropdown for non-folder items */}
+        <OutlineDropdown 
+          fileId={id}
+          fileName={name}
+          isFolder={isFolder}
+        />
+        
+        {/* Context Menu */}
+        {contextMenu && (
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            fileId={id}
+            isFolder={isFolder}
+            onNewFile={handleNewFile}
+            onNewFolder={handleNewFolder}
+            onDelete={handleDelete}
+            onRename={handleRename}
+          />
+        )}
+        
+        {/* File Operations Modal */}
+        {fileOperation && (
+          <FileOperationsModal
+            type={fileOperation.type}
+            parentId={fileOperation.parentId}
+            itemId={fileOperation.itemId}
+            itemName={fileOperation.itemName}
+            isFolder={fileOperation.isFolder}
+            onClose={closeFileOperation}
+          />
+        )}
       </div>
-      {fileTree.isFolder === true && isOpen && fileTree.children && (
-        <>
-        <div className="ml-2 border-l border-gray-600 ">
-          {fileTree.children.map((file) => (
-            console.log("Rendering file:", file.name),
-            <RecursiveComponent
-              fileTree={file}
-              key={file.id}
-              selectedTab={clickedFile.activeTab}
-            />
-          ))}
-        </div>
-        <div className="w-1/4 bg-[#1E1E1E]">
-        <OutlinePanel />
-      </div>
-      </>
-      )}
-    </div>
+    </DragDropHandler>
   );
 };
 

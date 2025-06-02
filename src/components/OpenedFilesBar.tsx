@@ -7,7 +7,8 @@ import { findFileById } from '../utils/functions';
 const OpenedFilesBar = () => {
   
   const { openedFiles } = useSelector((state: RootState) => state.fileBarSlice);
-  const {activeTab} = useSelector((state: RootState) => state.fileBarSlice.clickedFile);
+  // Removed unused variable as part of build optimization
+  const {/* activeTab */} = useSelector((state: RootState) => state.fileBarSlice.clickedFile);
   const {tree} = useSelector((state: RootState) => state.fileTreeSlice);
   const scrollRef = useRef<HTMLDivElement>(null);
 

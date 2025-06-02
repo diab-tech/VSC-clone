@@ -3,11 +3,13 @@ import type { ParserOptions, ParserPlugin } from "@babel/parser";
 import traverse from "@babel/traverse";
 import { RootState } from "../app/store";
 import { useSelector } from "react-redux";
-import { createSelector } from "@reduxjs/toolkit";
+// Removed unused import as part of build optimization
+// import { createSelector } from "@reduxjs/toolkit";
 import { useEffect, useRef, useMemo, useState } from "react";
 import * as monaco from "monaco-editor";
 import { useEditor } from "../context/useEditor";
 import AppIcon from "./AppIcons";
+import OutlineIcon from "./OutlineIcon";
 
 interface OutlineItem {
   name: string;
@@ -273,7 +275,6 @@ const OutlinePanel = () => {
 
   const renderOutlineItem = (item: OutlineItem, depth: number = 0) => {
     const itemId = `${item.type}-${item.name}-${item.line}`;
-    // Remove per-item render logging
     const isExpanded = expandedItems.has(itemId);
     const hasChildren = item.children.length > 0;
 
@@ -293,7 +294,8 @@ const OutlinePanel = () => {
               className="text-gray-400"
             />
           )}
-          <span className="text-gray-400">[{item.type}]</span> {item.name}
+          <OutlineIcon type={item.type} />
+          <span className="text-gray-400 text-xs">{item.name}</span>
         </div>
         {hasChildren && isExpanded && (
           <div>

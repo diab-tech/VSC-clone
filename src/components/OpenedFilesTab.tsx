@@ -1,13 +1,13 @@
 import ReactDOM from "react-dom";
-import React, { useEffect } from "react";
+import React from "react"; // Removed unused import as part of build optimization
 import { useDispatch, useSelector } from "react-redux";
 import { IFile } from "../interface";
 import { RootState, store, AppDispatch } from "../app/store";
 import {
   setClosedFiles,
-  setCloseToTheRight,
+  /* setCloseToTheRight, */ // Removed unused import as part of build optimization
 } from "../app/features/filesBarSlice";
-import { showMenu, hideMenu } from "../app/features/contextMenuSlice";
+import { showMenu /* hideMenu */ } from "../app/features/contextMenuSlice"; // Removed unused import as part of build optimization
 import AppIcon from "./AppIcons";
 import FileIcon from "./FileIcon";
 import ContextMenu from "../Ui/ContextMenu";
@@ -21,7 +21,7 @@ const OpenedFilesTaps = ({ file, isModified }: IProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const {
     clickedFile: { activeTab },
-    openedFiles,
+    /* openedFiles, */ // Removed unused variable as part of build optimization
   } = useSelector((state: RootState) => state.fileBarSlice);
 
   const { contextId, contextType, isVisible, position } = useSelector(

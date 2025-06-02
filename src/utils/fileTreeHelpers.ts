@@ -1,131 +1,114 @@
-// import { IFile } from "../interface";
+// fileTreeHelpers.ts - Extended with move functionality
+import { IFile } from '../interface';
 
-
-//   // Helper function to recursively find and update nodes
-// export const addNode = (node: IFile, parentId: string, newItem: IFile): IFile => {
-//   if (node.id === parentId && node.isFolder) {
-//     return {
-//       ...node,
-//       children: [...(node.children || []), newItem],
-//     };
-//   }
-
-//   if (node.children) {
-//     return {
-//       ...node,
-//       children: node.children.map(child => addNode(child, parentId, newItem)),
-//     };
-//   }
-
-//   return node;
-// };
-
-// export const deleteNode = (node: IFile, targetId: string): IFile | null => {
-//   if (node.id === targetId) return null;
-
-//   if (node.children) {
-//     const updatedChildren = node.children
-//       .map(child => deleteNode(child, targetId))
-//       .filter(Boolean) as IFile[];
-
-//     return { ...node, children: updatedChildren };
-//   }
-
-//   return node;
-// };
-
-// export const renameNode = (node: IFile, targetId: string, newName: string): IFile => {
-//   if (node.id === targetId) {
-//     return { ...node, name: newName };
-//   }
-
-//   if (node.children) {
-//     return {
-//       ...node,
-//       children: node.children.map(child =>
-//         renameNode(child, targetId, newName)
-//       ),
-//     };
-//   }
-
-//   return node;
-// };
-
-  // Dry your self
-
-  import { IFile } from "../interface";
-
-// دالة عامة للبحث وتعديل الشجرة
-export const findAndUpdateNode = (
-  node: IFile,
-  targetId: string,
-  updateFn: (node: IFile) => IFile | null
-): IFile | null => {
-  // لو وصلنا للعقدة المطلوبة، نفذ التعديل
-  if (node.id === targetId) {
-    return updateFn(node);
-  }
-
-  // لو فيه أبناء، كرر العملية عليهم
-  if (node.children) {
-    const updatedChildren = node.children
-      .map((child) => findAndUpdateNode(child, targetId, updateFn))
-      .filter((child): child is IFile => child !== null); // إزالة null
-    return { ...node, children: updatedChildren };
-  }
-
-  // لو مفيش تغيير، ارجع العقدة زي ما هي
-  return node;
-};
-
-// إضافة عقدة جديدة
-export const addNode = (node: IFile, parentId: string, newItem: IFile): IFile => {
-  return findAndUpdateNode(node, parentId, (currentNode) => {
-    if (!currentNode.isFolder) return currentNode; // لو مش مجلد، ارجع بدون تغيير
+// Add a new node to the tree
+export const addNode = (tree: IFile, parentId: string, newNode: IFile): IFile => {
+  if (tree.id === parentId && tree.isFolder) {
     return {
-      ...currentNode,
-      children: [...(currentNode.children || []), newItem],
+      ...tree,
+      children: [...(tree.children || []), newNode]
     };
-  }) || node;
+  }
+
+  if (tree.children) {
+    return {
+      ...tree,
+      children: tree.children.map(child => addNode(child, parentId, newNode))
+    };
+  }
+
+  return tree;
 };
 
-// حذف عقدة
-export const deleteNode = (node: IFile, targetId: string): IFile | null => {
-  return findAndUpdateNode(node, targetId, () => null);
-};
-
-// إعادة تسمية عقدة
-export const renameNode = (node: IFile, targetId: string, newName: string): IFile => {
-  return findAndUpdateNode(node, targetId, (currentNode) => ({
-    ...currentNode,
-    name: newName,
-  })) || node;
-};
-
-export const moveNode = (
-  tree: IFile,
-  nodeId: string,
-  newParentId: string
-): IFile => {
-  // 1. ابحث عن العقدة اللي هتنقلها
-  let targetNode: IFile | null = null;
-  const findNode = (node: IFile): IFile | null => {
-    if (node.id === nodeId) return node;
-    if (node.children) {
-      for (const child of node.children) {
-        const found = findNode(child);
-        if (found) return found;
-      }
-    }
+// Delete a node from the tree
+export const deleteNode = (tree: IFile, nodeId: string): IFile | null => {
+  // If this is the node to delete, return null
+  if (tree.id === nodeId) {
     return null;
+  }
+
+  // If this node has children, filter out the node to delete
+  if (tree.children) {
+    const newChildren = tree.children
+      .map(child => deleteNode(child, nodeId))
+      .filter(Boolean) as IFile[];
+
+    return {
+      ...tree,
+      children: newChildren
+    };
+  }
+
+  // Otherwise, return the node unchanged
+  return tree;
+};
+
+// Rename a node in the tree
+export const renameNode = (tree: IFile, nodeId: string, newName: string): IFile => {
+  if (tree.id === nodeId) {
+    return {
+      ...tree,
+      name: newName
+    };
+  }
+
+  if (tree.children) {
+    return {
+      ...tree,
+      children: tree.children.map(child => renameNode(child, nodeId, newName))
+    };
+  }
+
+  return tree;
+};
+
+// Move a node to a new parent
+export const moveNode = (tree: IFile, sourceId: string, targetId: string): IFile => {
+  // First, find the node to move
+  let nodeToMove: IFile | null = null;
+  
+  const findNode = (node: IFile): void => {
+    if (node.id === sourceId) {
+      nodeToMove = { ...node };
+      return;
+    }
+    
+    if (node.children) {
+      node.children.forEach(findNode);
+    }
   };
-  targetNode = findNode(tree);
-  if (!targetNode) return tree; // لو ملقتش العقدة، ارجع الشجرة زي ما هي
+  
+  findNode(tree);
+  
+  if (!nodeToMove) {
+    return tree;
+  }
+  
+  // Then delete the original node
+  const treeWithoutNode = deleteNode(tree, sourceId);
+  
+  if (!treeWithoutNode) {
+    return tree; // This shouldn't happen, but just in case
+  }
+  
+  // Finally, add the node to its new parent
+  return addNode(treeWithoutNode, targetId, nodeToMove);
+};
 
-  // 2. احذف العقدة من مكانها القديم
-  const updatedTree = deleteNode(tree, nodeId);
-  if (!updatedTree) return tree;
-
-  // 3. ضيف العقدة في الأب الجديد
-  return addNode(updatedTree, newParentId, targetNode);
+// Check if a node is a descendant of another node
+export const isDescendant = (tree: IFile, ancestorId: string, descendantId: string): boolean => {
+  if (tree.id === ancestorId) {
+    if (tree.children) {
+      return tree.children.some(child => 
+        child.id === descendantId || isDescendant(child, child.id, descendantId)
+      );
+    }
+    return false;
+  }
+  
+  if (tree.children) {
+    return tree.children.some(child => isDescendant(child, ancestorId, descendantId));
+  }
+  
+  return false;
 };
